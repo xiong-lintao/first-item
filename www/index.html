@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script src="./jquery.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        用户名：<input type="text" id="user">
+        密码:<input type="password" id="password">
+        <input type="button" id="btn1" value="注册">
+        <input type="button" id="btn2" value="登录">
+        <ul id="content">
+
+        </ul>
+        <input type="text" id="txt">
+        <input type="button" id="send" value="发送">
+    </div>
+    <script>
+        let sock = io.connect('ws://localhost:3000/')
+        let cur_user = ''
+
+        //注册
+        $('#btn1').on('click',()=>{
+            sock.emit('reg',$('#user').val(),$('#password').val())
+        })
+
+        //注册反馈
+        sock.on('reg_res',(...arg)=>{
+            if(arg[0]){
+                alert(`err---${arg[1]}`)
+            }else{
+                alert(arg[1])
+            }
+        })
+
+
+
+        //登录
+        $('#btn2').on('click',()=>{
+            sock.emit('login',$('#user').val(),$('#password').val())
+        })
+
+         //登录反馈
+        sock.on('login_res',(...arg)=>{
+            if(arg[0]){
+                alert(`err---${arg[1]}`)
+            }else{
+                cur_user = arg[1]
+                alert('登录成功')
+            }
+        })
+
+        //发送聊天内容
+        $('#send').on('click',()=>{
+            sock.emit('msg',$('#txt').val())
+        })
+
+        //聊天反馈
+        sock.on('msg',(...arg)=>{
+            let li = $('<li></li>')
+            let ps = $(`<p>${arg[0]}</p><p>${arg[1]}</p>`)
+            li.append(ps)
+            $('#content').append(li)
+        })
+
+        sock.on('msg_res',(...arg)=>{
+            if(arg[0]==1){
+                alert(`err----${arg[1]}`)
+            }else{
+                let li = $('<li></li>')
+                let ps = $(`<p>${cur_user}</p><p>${$("#txt").val()}</p>`)
+                li.append(ps)
+                $('#content').append(li)
+            }
+        })
+
+        // sock.on('disconnection',(data)=>{
+        //     alert(data)
+        // })
+
+
+    </script>
+</body>
+</html>
